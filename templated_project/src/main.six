@@ -1,0 +1,5 @@
+﻿six templated_project
+    fn main()
+        put "Hello, Six! From Template"
+    end
+end

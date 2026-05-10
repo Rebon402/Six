@@ -148,7 +148,7 @@ impl Parser {
             Token::Keyword(Keyword::Ret) => self.parse_return(),
             Token::Keyword(Keyword::Use) => self.parse_use(),
             Token::Keyword(Keyword::Try) => self.parse_try(),
-            Token::Keyword(Keyword::Put) => self.parse_put(),
+            Token::Keyword(Keyword::Put) | Token::Keyword(Keyword::Print) => self.parse_put(),
             Token::Keyword(Keyword::Get) => self.parse_get(),
             Token::Keyword(Keyword::Leak) => {
                 self.advance();

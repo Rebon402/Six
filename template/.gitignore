@@ -1,0 +1,5 @@
+﻿/target
+/release
+*.siz
+*.siz.lib
+*.six.h

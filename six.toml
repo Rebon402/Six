@@ -1,0 +1,7 @@
+﻿[project]
+name = "test-deps"
+version = "0.1.0"
+
+[dependencies]
+"@std/io" = "v1.0.0"
+"@std/crypto" = "v1.0.0"

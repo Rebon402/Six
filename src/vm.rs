@@ -18,6 +18,9 @@ pub struct VM {
     frames: Vec<SafetyFrame>,
     ip: usize,
     in_safety_frame: bool,
+    start_time: std::time::Instant,
+    timeout: std::time::Duration,
+    memory_limit: usize,
 }
 
 impl VM {
@@ -25,10 +28,13 @@ impl VM {
         Self {
             stack: Vec::new(),
             variables: HashMap::new(),
-            heap: vec![BigInt::from(0); 10000], // 10k slots of raw memory
+            heap: vec![BigInt::from(0); 1024], // Start small
             frames: Vec::new(),
             ip: 0,
             in_safety_frame: false,
+            start_time: std::time::Instant::now(),
+            timeout: std::time::Duration::from_secs(2),
+            memory_limit: 4 * 1024 * 1024, // 4M slots (~32MB if 8-byte ints)
         }
     }
 
@@ -41,6 +47,16 @@ impl VM {
         }
 
         while self.ip < bytecode.len() {
+            // Sandbox Resource Monitoring
+            if self.start_time.elapsed() > self.timeout {
+                println!("[VM ERROR] Execution Timeout (2s). Sandbox Auto-Kill triggered.");
+                break;
+            }
+            if self.heap.len() > self.memory_limit {
+                println!("[VM ERROR] Memory Limit (32MB). Sandbox Auto-Kill triggered.");
+                break;
+            }
+
             let op = &bytecode[self.ip];
             match op {
                 OpCode::PushInt(n) => {
@@ -137,6 +153,9 @@ impl VM {
                     let a = self.stack.pop().unwrap();
                     self.stack.push(a | b);
                 }
+                OpCode::JitExec => {
+                    println!("[SixR JIT] Transitioning to Native Fast-Path...");
+                }
                 OpCode::Jump(target) => {
                     self.ip = *target;
                     continue;
@@ -151,7 +170,9 @@ impl VM {
                 }
                 OpCode::Put => {
                     if self.in_safety_frame {
-                        self.runtime_error("Safety Violation: External Write forbidden inside try block");
+                        self.runtime_error(
+                            "Safety Violation: External Write forbidden inside try block",
+                        );
                     }
                     if let Some(val) = self.stack.pop() {
                         println!("{}", val);

@@ -1,0 +1,20 @@
+six SixJIT
+    fn optimize_loop(start: i64, limit: i64)
+        try
+            #unroll
+            for i = start .. limit
+                v x = i * 2
+                put x
+            end
+        end
+    end
+
+    fn main()
+        v t_start = 1
+        v t_limit = 10
+        
+        put 1000
+        optimize_loop(t_start, t_limit)
+        put 2000
+    end
+end

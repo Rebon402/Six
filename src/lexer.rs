@@ -5,9 +5,13 @@ pub enum Token {
     Number(String),
     String(String),
     Op(String),
-    LParen, RParen,
-    LBrace, RBrace,
-    Comma, Dot, Colon,
+    LParen,
+    RParen,
+    LBrace,
+    RBrace,
+    Comma,
+    Dot,
+    Colon,
     Newline,
     Unknown(char),
     EOF,
@@ -22,7 +26,23 @@ pub struct TokenData {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Keyword {
-    Six, End, Fn, V, If, Else, For, Ret, Use, Try, Put, Get, Ptr, Leak, Report, As,
+    Six,
+    End,
+    Fn,
+    V,
+    If,
+    Else,
+    For,
+    Ret,
+    Use,
+    Try,
+    Put,
+    Get,
+    Ptr,
+    Leak,
+    Report,
+    Print,
+    As,
 }
 
 pub struct Lexer {
@@ -34,7 +54,12 @@ pub struct Lexer {
 
 impl Lexer {
     pub fn new(input: &str) -> Self {
-        Self {
+        let input = if input.starts_with('\u{FEFF}') {
+            &input[3..]
+        } else {
+            input
+        };
+        Lexer {
             input: input.chars().collect(),
             pos: 0,
             line: 1,
@@ -47,7 +72,9 @@ impl Lexer {
             let td = self.next_token();
             let is_eof = td.token == Token::EOF;
             tokens.push(td);
-            if is_eof { break; }
+            if is_eof {
+                break;
+            }
         }
         tokens
     }
@@ -55,14 +82,22 @@ impl Lexer {
     pub fn next_token(&mut self) -> TokenData {
         let is_newline = self.skip_whitespace();
         if is_newline {
-            return TokenData { token: Token::Newline, line: self.line - 1, col: self.col };
+            return TokenData {
+                token: Token::Newline,
+                line: self.line - 1,
+                col: self.col,
+            };
         }
 
         let current_line = self.line;
         let current_col = self.col;
 
         if self.pos >= self.input.len() {
-            return TokenData { token: Token::EOF, line: current_line, col: current_col };
+            return TokenData {
+                token: Token::EOF,
+                line: current_line,
+                col: current_col,
+            };
         }
 
         let ch = self.input[self.pos];
@@ -111,12 +146,18 @@ impl Lexer {
             }
         };
 
-        TokenData { token, line: current_line, col: current_col }
+        TokenData {
+            token,
+            line: current_line,
+            col: current_col,
+        }
     }
 
     fn read_identifier(&mut self) -> Token {
         let start = self.pos;
-        while self.pos < self.input.len() && (self.input[self.pos].is_alphanumeric() || self.input[self.pos] == '_') {
+        while self.pos < self.input.len()
+            && (self.input[self.pos].is_alphanumeric() || self.input[self.pos] == '_')
+        {
             self.pos += 1;
             self.col += 1;
         }
@@ -137,6 +178,7 @@ impl Lexer {
             "ptr" => Token::Keyword(Keyword::Ptr),
             "leak" => Token::Keyword(Keyword::Leak),
             "report" => Token::Keyword(Keyword::Report),
+            "print" => Token::Keyword(Keyword::Print),
             "as" => Token::Keyword(Keyword::As),
             _ => Token::Identifier(text),
         }
@@ -144,11 +186,17 @@ impl Lexer {
 
     fn read_number(&mut self) -> Token {
         let start = self.pos;
-        while self.pos < self.input.len() && self.input[self.pos].is_numeric() {
+        while self.pos < self.input.len()
+            && (self.input[self.pos].is_numeric() || self.input[self.pos] == '_')
+        {
             self.pos += 1;
             self.col += 1;
         }
-        Token::Number(self.input[start..self.pos].iter().collect())
+        let text: String = self.input[start..self.pos]
+            .iter()
+            .filter(|&&c| c != '_')
+            .collect();
+        Token::Number(text)
     }
 
     fn read_string(&mut self) -> Token {
@@ -180,7 +228,10 @@ impl Lexer {
                     self.col += 1;
                 }
                 self.pos += 1;
-            } else if ch == '/' && self.pos + 1 < self.input.len() && self.input[self.pos + 1] == '/' {
+            } else if ch == '/'
+                && self.pos + 1 < self.input.len()
+                && self.input[self.pos + 1] == '/'
+            {
                 // Skip comment
                 while self.pos < self.input.len() && self.input[self.pos] != '\n' {
                     self.pos += 1;

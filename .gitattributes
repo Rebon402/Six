@@ -1,8 +1,6 @@
-# Source code
 *.six linguist-language=C++
 *.six text
 
-# Compiled/Encrypted binaries
 *.siz linguist-vendored
 *.siz binary
 *.siz.lib linguist-vendored

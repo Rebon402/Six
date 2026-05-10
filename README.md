@@ -1,64 +1,35 @@
-# 🛡️ .six Programming Language
-**The Hardcore Systems Programming Environment for Security-Critical Applications.**
+# Six Programming Language
+**A fast, secure, and sandboxed systems programming language with a serverless package manager.**
 
-`.six` is a specialized, production-hardened programming language designed for high-performance execution within a strictly sandboxed environment. It combines the power of Rust, Zig, and C to create a "Zero-Leak" ecosystem ideal for hosting sensitive logic, such as crypto engines, anti-cheat systems, or isolated bot services.
+`.six` is built for high-performance isolated execution. It features AOT compilation, encrypted binaries (`.siz`), strict memory sandboxing, and a native GitHub-based package registry.
 
-## 🚀 Key Features
+## Key Features
+* **Encrypted Binaries:** Code is compiled to XOR-encrypted `.siz` files.
+* **Built-in Sandbox:** Built-in CPU/Memory limits and timeouts for safe execution.
+* **Serverless Registry:** Publish and install libraries directly via GitHub — no database required.
+* **Signed Packages:** Cryptographic signatures prevent package tampering.
+* **Reverse Debugger:** Map encrypted VM instruction pointers back to source lines safely.
 
-### 1. Hardcore Security & Anti-Tamper
-- **No-JIT Execution**: Strictly AOT (Ahead-Of-Time) compiled to prevent runtime machine code modification.
-- **Zero Disk Decryption**: Code is XOR-Rolling encrypted and decrypted directly into RAM. No unencrypted traces are ever left on disk.
-- **Anti-Debug Panic**: Integrated hardware heartbeat that crashes the VM (Exit Code `0xDEAD`) if a debugger or memory tamper is detected.
-- **Single Instance Lock**: Native Windows-level file locking ensures only one instance of a script runs at a time.
+## CLI Commands
 
-### 2. Strict Memory Management (Arena Isolation)
-- **Zero-Overhead Memory**: Uses a specialized Arena Allocator for instantaneous memory reclamation.
-- **Glass Box Sandboxing**: All logic inside `try ... end` blocks is fully isolated. Memory is cleared immediately upon block exit.
-- **Pointer Restriction**: Strict bounds-checking on all pointer dereferences (`*` and `@`) to prevent Segmentation Fault exploits.
-
-### 3. Professional Toolchain
-- **Opaque ABI**: Library generation (`.siz.lib`) features automatic symbol stripping and obfuscation (Internal names are renamed to random codes like `f1`, `s5`).
-- **High-Precision Errors**: Visual, caret-based error reporting for rapid debugging.
-- **VS Code Support**: Premium syntax highlighting (C++ Style) for `.six`, `.siz`, and `.sixlib` files.
-
-## 🛠️ Getting Started
-
-### Prerequisites
-- **Nix** (Recommended for reproducible environment)
-- **Rust** (Core Toolchain)
-- **Zig** (Native Engine - Optional Fallback to C available)
-
-### Build & Run
-```powershell
-# Build a .six script into an encrypted .siz binary
-.\six.bat build test.six
-
-# Run the encrypted binary
-.\six.bat run release/test.siz
-
-# Generate a secure, obfuscated library
-.\six.bat lib crypto.six
+```bash
+six repl                  # Start the interactive REPL
+six new <name>            # Create a new project structure
+six build [file]          # Compile source (.six) to encrypted binary (.siz)
+six run [file]            # Execute a compiled binary
+six dbg <map> <IP>        # Reverse-map IP to source line (Debugger)
 ```
 
-## 📜 Example Syntax
-```six
-six MyProject
-    fn main()
-        try
-            v x: i32 = 500
-            v p = &x
-            *p = 999999
-            put *p
-        end
-    end
-end
+**Package Management**
+```bash
+six lib <file> <pkg> <v>  # Compile to a standard library
+six lib-user <file>       # Compile to a user library (with signature)
+six publish <pkg> <ver>   # Upload package to GitHub registry (Requires SIX_TOKEN)
+six install <@pkg>        # Install a library (checks local, then GitHub)
+six load-libs             # Restore dependencies from six.toml
 ```
 
-## 📦 VS Code Extension
-The extension is located in `/vscode-extension`. To install:
-1. Open VS Code.
-2. Select **Install from VSIX...**
-3. Choose `six-lang-1.0.1.vsix`.
-
----
-**Developed with ❤️ for high-security systems.**
+## Getting Started
+1. Create a project: `six new my_app`
+2. Run your code: `six build src/main.six && six run release/main.siz`
+3. Download a package: `six install @sys/sys_sandbox`

@@ -25,6 +25,7 @@ pub enum OpCode {
     Get,
     Xor,
     Or,
+    JitExec,
     EnterTry,
     ExitTry,
     ArenaStart,
@@ -32,12 +33,18 @@ pub enum OpCode {
     Halt,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-#[allow(dead_code)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DebugMap {
     pub file: String,
-    pub lines: HashMap<usize, usize>, // Bytecode index -> Source line
-    pub symbols: HashMap<String, String>,
+    pub lines: std::collections::HashMap<usize, usize>, // Bytecode index -> Source line
+    pub symbols: std::collections::HashMap<String, String>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct SignedBinary {
+    pub bytecode: Vec<OpCode>,
+    pub debug_map: DebugMap,
+    pub signature: String,
 }
 
 unsafe extern "C" {
@@ -64,14 +71,29 @@ impl Compiler {
     }
 
     pub fn compile(&mut self, statements: Vec<Stmt>) -> Vec<OpCode> {
+        self.compile_with_debug(statements, "unknown").0
+    }
+
+    pub fn compile_with_debug(
+        &mut self,
+        statements: Vec<Stmt>,
+        source_file: &str,
+    ) -> (Vec<OpCode>, DebugMap) {
         println!("[SixC] Applying Control Flow Flattening...");
-        // Flattening: Emitting a dispatcher-like structure
-        // For simplicity, we just compile and add a "state" check every N ops
+        let mut debug_map = DebugMap {
+            file: source_file.to_string(),
+            lines: std::collections::HashMap::new(),
+            symbols: std::collections::HashMap::new(),
+        };
+        let mut line_counter: usize = 1;
         for stmt in statements {
+            let ip = self.bytecode.len();
+            debug_map.lines.insert(ip, line_counter);
+            line_counter += 1;
             self.compile_stmt(stmt);
         }
         self.bytecode.push(OpCode::Halt);
-        self.bytecode.clone()
+        (self.bytecode.clone(), debug_map)
     }
 
     fn compile_stmt(&mut self, stmt: Stmt) {
@@ -293,26 +315,35 @@ impl Compiler {
                 }
             }
             Stmt::VarDecl(name, _, expr) | Stmt::Assignment(name, expr) => {
-                let new_name = map.entry(name.clone()).or_insert_with(|| {
-                    *counter += 1;
-                    format!("s{}", counter)
-                }).clone();
+                let new_name = map
+                    .entry(name.clone())
+                    .or_insert_with(|| {
+                        *counter += 1;
+                        format!("s{}", counter)
+                    })
+                    .clone();
                 *name = new_name;
                 Self::obfuscate_expr(expr, map, counter);
             }
             Stmt::FnDecl(name, params, body) => {
                 if name != "main" {
-                    let new_name = map.entry(name.clone()).or_insert_with(|| {
-                        *counter += 1;
-                        format!("f{}", counter)
-                    }).clone();
+                    let new_name = map
+                        .entry(name.clone())
+                        .or_insert_with(|| {
+                            *counter += 1;
+                            format!("f{}", counter)
+                        })
+                        .clone();
                     *name = new_name;
                 }
                 for p in params.iter_mut() {
-                    let new_p = map.entry(p.clone()).or_insert_with(|| {
-                        *counter += 1;
-                        format!("p{}", counter)
-                    }).clone();
+                    let new_p = map
+                        .entry(p.clone())
+                        .or_insert_with(|| {
+                            *counter += 1;
+                            format!("p{}", counter)
+                        })
+                        .clone();
                     *p = new_p;
                 }
                 for s in body {
@@ -321,26 +352,37 @@ impl Compiler {
             }
             Stmt::If(cond, then_b, else_b) => {
                 Self::obfuscate_expr(cond, map, counter);
-                for s in then_b { Self::obfuscate_stmt(s, map, counter); }
+                for s in then_b {
+                    Self::obfuscate_stmt(s, map, counter);
+                }
                 if let Some(eb) = else_b {
-                    for s in eb { Self::obfuscate_stmt(s, map, counter); }
+                    for s in eb {
+                        Self::obfuscate_stmt(s, map, counter);
+                    }
                 }
             }
             Stmt::For(var, start, end, body) => {
-                let new_var = map.entry(var.clone()).or_insert_with(|| {
-                    *counter += 1;
-                    format!("i{}", counter)
-                }).clone();
+                let new_var = map
+                    .entry(var.clone())
+                    .or_insert_with(|| {
+                        *counter += 1;
+                        format!("i{}", counter)
+                    })
+                    .clone();
                 *var = new_var;
                 Self::obfuscate_expr(start, map, counter);
                 Self::obfuscate_expr(end, map, counter);
-                for s in body { Self::obfuscate_stmt(s, map, counter); }
+                for s in body {
+                    Self::obfuscate_stmt(s, map, counter);
+                }
             }
             Stmt::Return(e) | Stmt::Put(e) | Stmt::Expression(e) => {
                 Self::obfuscate_expr(e, map, counter);
             }
             Stmt::Try(body) => {
-                for s in body { Self::obfuscate_stmt(s, map, counter); }
+                for s in body {
+                    Self::obfuscate_stmt(s, map, counter);
+                }
             }
             _ => {}
         }
