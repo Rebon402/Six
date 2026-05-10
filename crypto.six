@@ -1,0 +1,25 @@
+six Crypto
+    fn xor_layer(data: i64, key: i64, salt: i64)
+        v result = 0
+        try
+            v stage1 = data ^ key
+            v stage2 = stage1 ^ salt
+            result = stage2
+        end
+        ret result
+    end
+
+    fn main()
+        v my_data = 123456789
+        v my_key = 987654321
+        v my_salt = 555
+        
+        put my_data
+        
+        v encrypted = xor_layer(my_data, my_key, my_salt)
+        put encrypted
+        
+        v decrypted = xor_layer(encrypted, my_key, my_salt)
+        put decrypted
+    end
+end

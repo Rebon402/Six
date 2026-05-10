@@ -1,0 +1,16 @@
+six TestProject
+    fn main()
+        try
+            v x: i32 = 500
+            v p = &x
+            *p = 9999999999
+            
+            put "Value at ptr x:"
+            put *p
+            
+            for i = 1 .. 5
+                put i
+            end
+        end
+    end
+end

@@ -1,0 +1,37 @@
+{
+    "name": "six-lang",
+    "publisher": "Rebon402",
+    "displayName": "Six Language Support",
+    "description": "Syntax highlighting for the .six programming language",
+    "version": "1.0.1",
+    "engines": {
+        "vscode": "^1.60.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "six",
+                "aliases": [
+                    "Six",
+                    "six"
+                ],
+                "extensions": [
+                    ".six",
+                    ".siz",
+                    ".sixlib"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "six",
+                "scopeName": "source.six",
+                "path": "./syntaxes/six.tmLanguage.json"
+            }
+        ]
+    }
+}

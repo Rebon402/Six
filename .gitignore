@@ -1,0 +1,10 @@
+/target
+/release
+/other
+*.siz
+*.siz.lib
+*.six.h
+*.vsix
+.six.lock
+.DS_Store
+.vscode
