@@ -1,5 +1,5 @@
-*.six linguist-language=Six
-*.siz linguist-language=Six
+*.six linguist-language=Rust
+*.siz linguist-language=Rust
 
 *.six text
 *.siz text
