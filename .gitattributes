@@ -1,0 +1,5 @@
+*.six linguist-language=Six
+*.siz linguist-language=Six
+
+*.six text
+*.siz text
