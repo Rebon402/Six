@@ -1,5 +1,9 @@
-*.six linguist-language=Rust
-*.siz linguist-language=Rust
-
+# Source code
+*.six linguist-language=C++
 *.six text
-*.siz text
+
+# Compiled/Encrypted binaries
+*.siz linguist-vendored
+*.siz binary
+*.siz.lib linguist-vendored
+*.siz.lib binary
