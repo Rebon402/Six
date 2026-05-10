@@ -1,3 +1,4 @@
+*.six linguist-language=Rust
 *.six text
 
 *.siz linguist-vendored

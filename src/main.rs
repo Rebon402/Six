@@ -114,7 +114,7 @@ fn main() {
             // Create .gitattributes
             let git_attr = read_template(
                 ".gitattributes",
-                "*.six text\n*.siz binary\n*.siz linguist-vendored\n",
+                "*.six linguist-language=Rust\n*.six text\n*.siz binary\n*.siz linguist-vendored\n",
             );
             std::fs::write(format!("{}/.gitattributes", root), git_attr).unwrap();
 
@@ -374,30 +374,32 @@ fn main() {
                 println!("  Set SIX_TOKEN env var to your GitHub personal access token.");
                 return;
             }
-            let pkg     = &args[2]; // e.g. @Rebon402/sandbox-vm
+            let pkg = &args[2]; // e.g. @Rebon402/sandbox-vm
             let version = &args[3]; // e.g. v1.0.0
-            let token   = std::env::var("SIX_TOKEN").unwrap_or_default();
+            let token = std::env::var("SIX_TOKEN").unwrap_or_default();
             if token.is_empty() {
                 println!("[SixP ERROR] SIX_TOKEN not set. Export your GitHub PAT first.");
                 return;
             }
 
             let sanitized = pkg.replace('@', "").replace('/', "-");
-            let stem      = format!("{}-{}", sanitized, version);
-            let lib_path  = format!("other/user_libs/{}.siz.lib", stem);
-            let hdr_path  = format!("other/user_libs/{}.six.h",   stem);
+            let stem = format!("{}-{}", sanitized, version);
+            let lib_path = format!("other/user_libs/{}.siz.lib", stem);
+            let hdr_path = format!("other/user_libs/{}.six.h", stem);
 
             for (local, remote_name) in [
                 (&lib_path, format!("{}.siz.lib", stem)),
-                (&hdr_path, format!("{}.six.h",   stem)),
+                (&hdr_path, format!("{}.six.h", stem)),
             ] {
                 let data = match fs::read(local) {
                     Ok(d) => d,
-                    Err(_) => { println!("[SixP ERROR] File not found: {}", local); return; }
+                    Err(_) => {
+                        println!("[SixP ERROR] File not found: {}", local);
+                        return;
+                    }
                 };
-                let encoded = base64::Engine::encode(
-                    &base64::engine::general_purpose::STANDARD, &data
-                );
+                let encoded =
+                    base64::Engine::encode(&base64::engine::general_purpose::STANDARD, &data);
 
                 let api_url = format!(
                     "https://api.github.com/repos/Rebon402/six-registry/contents/libs/{}",
@@ -427,11 +429,14 @@ fn main() {
                     .send_json(&body);
 
                 match res {
-                    Ok(_)  => println!("[SixP] ✓ Uploaded: {}", remote_name),
+                    Ok(_) => println!("[SixP] ✓ Uploaded: {}", remote_name),
                     Err(e) => println!("[SixP ERROR] {}: {:?}", remote_name, e),
                 }
             }
-            println!("[SixP] Published {} {} to Rebon402/six-registry", pkg, version);
+            println!(
+                "[SixP] Published {} {} to Rebon402/six-registry",
+                pkg, version
+            );
         }
         _ => println!("Unknown command. Run 'six' for usage."),
     }
