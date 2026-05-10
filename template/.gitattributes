@@ -1,4 +1,3 @@
-﻿*.six linguist-language=C++
 *.six text
 *.siz binary
 *.siz linguist-vendored

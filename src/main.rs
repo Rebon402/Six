@@ -114,7 +114,7 @@ fn main() {
             // Create .gitattributes
             let git_attr = read_template(
                 ".gitattributes",
-                "*.six linguist-language=C++\n*.six text\n*.siz binary\n*.siz linguist-vendored\n",
+                "*.six text\n*.siz binary\n*.siz linguist-vendored\n",
             );
             std::fs::write(format!("{}/.gitattributes", root), git_attr).unwrap();
 
