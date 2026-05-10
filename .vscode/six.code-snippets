@@ -1,0 +1,103 @@
+{
+  "Six Project Boilerplate": {
+    "prefix": "six",
+    "body": [
+      "six ${1:MyProject}",
+      "    fn main()",
+      "        $0",
+      "    end",
+      "end"
+    ],
+    "description": "Boilerplate for a new .six project"
+  },
+  "Six Function": {
+    "prefix": "fn",
+    "body": [
+      "fn ${1:name}(${2:args})",
+      "    $0",
+      "end"
+    ],
+    "description": "Function declaration"
+  },
+  "Six If Statement": {
+    "prefix": "if",
+    "body": [
+      "if ${1:condition}",
+      "    $0",
+      "end"
+    ],
+    "description": "If conditional block"
+  },
+  "Six If Else": {
+    "prefix": "ifelse",
+    "body": [
+      "if ${1:condition}",
+      "    $2",
+      "else",
+      "    $0",
+      "end"
+    ],
+    "description": "If-else conditional block"
+  },
+  "Six For Loop": {
+    "prefix": "for",
+    "body": [
+      "for ${1:i} = ${2:0} .. ${3:10}",
+      "    $0",
+      "end"
+    ],
+    "description": "Standard for loop"
+  },
+  "Six Try Sandbox Block": {
+    "prefix": "try",
+    "body": [
+      "try",
+      "    // Entering Glass Box Sandbox (Memory is wiped on exit)",
+      "    $0",
+      "end"
+    ],
+    "description": "Isolated sandbox execution block"
+  },
+  "Six Variable Declaration": {
+    "prefix": "v",
+    "body": [
+      "v ${1:name} = ${2:value}"
+    ],
+    "description": "Declare a local variable"
+  },
+  "Six Put (Print)": {
+    "prefix": "put",
+    "body": [
+      "put ${1:\"message\"}"
+    ],
+    "description": "Output a value to the console"
+  },
+  "Six Load System Library": {
+    "prefix": "use sys",
+    "body": [
+      "use \"@sys/${1|sys_sandbox,sys_debugger,sys_repl,sys_verifier,sys_lsp|}\""
+    ],
+    "description": "Import a built-in standard library"
+  },
+  "Six Load User Library": {
+    "prefix": "use user",
+    "body": [
+      "use \"@${1:author}/${2:lib_name}\""
+    ],
+    "description": "Import a community/user library"
+  },
+  "Six Sandbox Set Policy": {
+    "prefix": "sys set_policy",
+    "body": [
+      "sys_sandbox::set_policy(${1:7})"
+    ],
+    "description": "Set sandbox security policy level"
+  },
+  "Six Sandbox Exec Safe": {
+    "prefix": "sys exec_safe",
+    "body": [
+      "sys_sandbox::exec_safe(${1:func_ptr})"
+    ],
+    "description": "Execute a function securely in the sandbox"
+  }
+}
